@@ -26,12 +26,12 @@ static int cache_writeback = DEFAULT_CACHE_WRITEBACK;
 static int cache_writealloc = DEFAULT_CACHE_WRITEALLOC;
 
 /* cache model data structures */
-static Pcache icache;
-static Pcache dcache;
-static cache c1;
-static cache c2;
-static cache_stat cache_stat_inst;
-static cache_stat cache_stat_data;
+static Pcache ptr_icache; // apuntador a cache de instrucciones
+static Pcache ptr_dcache; // apuntador a cache de datos
+static cache icache; // cache de instrucciones
+static cache dcache; // cache de datos
+static cache_stat cache_stat_inst; // estadísticas del cache de instrucciones
+static cache_stat cache_stat_data; // estadísticas del cache de datos
 
 /************************************************************/
 // esta función es llamada en múltiples ocasiones desde main.c
