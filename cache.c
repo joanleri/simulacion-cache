@@ -11,7 +11,11 @@
 #include "main.h"
 
 /* cache configuration parameters */
-static int cache_split = 0;
+// En esta sección se están declarando variables globales
+// que sirven para simular el cache. Estas se están
+// inizializando a los valores default definidos en
+// cache.h
+static int cache_split = FALSE;
 static int cache_usize = DEFAULT_CACHE_SIZE;
 static int cache_isize = DEFAULT_CACHE_SIZE; 
 static int cache_dsize = DEFAULT_CACHE_SIZE;
@@ -30,6 +34,10 @@ static cache_stat cache_stat_inst;
 static cache_stat cache_stat_data;
 
 /************************************************************/
+// esta función es llamada en múltiples ocasiones desde main.c
+// específicamente, se llama por cada argumento válido en la 
+// línea de comandos. Esta función modifica las variables
+// locales declaradas al inicio de este archivo
 void set_cache_param(param, value)
   int param;
   int value;
@@ -76,34 +84,42 @@ void set_cache_param(param, value)
 /************************************************************/
 
 /************************************************************/
+// esta función solo es llamada una vez en el archivo main.c
+// e inicializa las estructuras de cache y cache statistics
+// (definidas en el archivo cache.h)
 void init_cache()
 {
-
-  /* initialize the cache, and cache statistics data structures */
-
+  // TODO: implementación
 }
 /************************************************************/
 
 /************************************************************/
+// esta función es llamada en cada iteración de la función 
+// play_trace() del archivo main.c. Simula una referencia a
+// memoria del cache
 void perform_access(addr, access_type)
   unsigned addr, access_type;
 {
-
-  /* handle an access to the cache */
-
+  // TODO: implementación
 }
 /************************************************************/
 
 /************************************************************/
+// es llamada una vez antes de finalizar la función play_trace()
+// del archivo main.c. Sirve para eliminar todos los contenidos de
+// la memoria cache.
 void flush()
 {
-
-  /* flush the cache */
-
+  // TODO: implementación
 }
 /************************************************************/
 
 /************************************************************/
+// esta función es útil para simular asociatividad de la memoria
+// cache. Específicamente, se utiliza para eliminar una línea de
+// cache contenida en un banco. Esto puede suceder tanto cuando
+// se quiere eliminar como cuando se hace referencia a una línea
+// bajo el esquema de reposición Least Recently Used.
 void delete(head, tail, item)
   Pcache_line *head, *tail;
   Pcache_line item;
@@ -125,7 +141,8 @@ void delete(head, tail, item)
 /************************************************************/
 
 /************************************************************/
-/* inserts at the head of the list */
+// Inserta una línea de cache en la cabeza de la lista 
+// a.k.a. cabeza del banco
 void insert(head, tail, item)
   Pcache_line *head, *tail;
   Pcache_line item;
@@ -143,6 +160,7 @@ void insert(head, tail, item)
 /************************************************************/
 
 /************************************************************/
+// imprime la configuración de la memoria cache a la consola
 void dump_settings()
 {
   printf("*** CACHE SETTINGS ***\n");
@@ -164,6 +182,10 @@ void dump_settings()
 /************************************************************/
 
 /************************************************************/
+// imprime a la consola las estadísticas recolectadas de la
+// simulación del cache a través de los archivos *.trace. 
+// Estas estadísticas deben de ser actualizadas dentro de 
+// perform_access().
 void print_stats()
 {
   printf("\n*** CACHE STATISTICS ***\n");
