@@ -29,6 +29,11 @@
 
 
 /* structure definitions */
+// definición de la estructura de una línea de cache
+// además de una etiqueta y un dirty bit contiene
+// dos apuntadores a líneas de cache ya que se 
+// implementa como una lista doblemente ligada
+// útil cuando se use para cache con asociatividad
 typedef struct cache_line_ {
   unsigned tag;
   int dirty;
@@ -37,6 +42,19 @@ typedef struct cache_line_ {
   struct cache_line_ *LRU_prev;
 } cache_line, *Pcache_line;
 
+// definción de estructura que modela a la memoria cache
+// contiene tamaño, asociatividad, número de sets,
+// máscara de índice y máscara de offset. Estos
+// son los parámetros que se inicializan desde la función
+// init_cache() del main.c.
+// El apuntador *LRU_head sirve de referencia al arreglo
+// de cabezas de cada lista (banco) de líneas de cache.
+// El apuntador *LRU_tail sirve de referencia al arreglo
+// de finalización de cada lista (banco) del cache. Es 
+// solamente necesario para implementar LRU de forma rápida.
+// contents sirve para llevar un conteo de la cardinalidad
+// de cada banco para asegurarse que ninguno exceda la
+// asociatividad expecificada. Es un arreglo de enteros
 typedef struct cache_ {
   int size;			/* cache size */
   int associativity;		/* cache associativity */
