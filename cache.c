@@ -121,8 +121,8 @@ void flush()
 // se quiere eliminar como cuando se hace referencia a una línea
 // bajo el esquema de reposición Least Recently Used.
 void delete(head, tail, item)
-  Pcache_line *head, *tail;
-  Pcache_line item;
+  Pcache_line *head, *tail; // apuntadores a apuntadores de líneas
+  Pcache_line item; // apuntador de línea
 {
   if (item->LRU_prev) {
     item->LRU_prev->LRU_next = item->LRU_next;
@@ -144,17 +144,25 @@ void delete(head, tail, item)
 // Inserta una línea de cache en la cabeza de la lista 
 // a.k.a. cabeza del banco
 void insert(head, tail, item)
-  Pcache_line *head, *tail;
-  Pcache_line item;
+  Pcache_line *head, *tail; // apuntadores a apuntadores de líneas
+  Pcache_line item; // apuntador a línea
 {
+  // el item apunta en next a la dirección que apuntaba la cabeza del banco
   item->LRU_next = *head;
+  // pointer casting
   item->LRU_prev = (Pcache_line)NULL;
 
+  // verificando si el item insertado no era el primero del banco
   if (item->LRU_next)
+    // ya hay otro elemento en el banco
+    // hacemos que el item que estaba antes en la cabeza apunte
+    // al nuevo item agregado
     item->LRU_next->LRU_prev = item;
   else
+    // de lo contario, la cola debe apuntar al nuevo item insertado
     *tail = item;
 
+  // finalmente la cabeza apunta al item
   *head = item;
 }
 /************************************************************/
