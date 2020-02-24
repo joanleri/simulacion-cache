@@ -15,6 +15,7 @@
 #define DEFAULT_CACHE_ASSOC 1
 #define DEFAULT_CACHE_WRITEBACK TRUE
 #define DEFAULT_CACHE_WRITEALLOC TRUE
+#define DEFAULT_ADDRESS_SIZE 32
 
 /* constants for settting cache parameters */
 #define CACHE_PARAM_BLOCK_SIZE 0
