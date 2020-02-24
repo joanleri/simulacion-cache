@@ -64,7 +64,7 @@ typedef struct cache_ {
   Pcache_line *LRU_head;	/* head of LRU list for each set */
   Pcache_line *LRU_tail;	/* tail of LRU list for each set */
   int *set_contents;		/* number of valid entries in set */
-  int contents;			/* number of valid entries in cache */
+  // int contents;			/* number of valid entries in cache (no le veo la utilidad) */
 } cache, *Pcache;
 
 typedef struct cache_stat_ {
