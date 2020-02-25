@@ -86,6 +86,7 @@ void delete();
 void insert();
 void dump_settings();
 void print_stats();
+int get_index_mask();
 
 
 /* macros */
