@@ -93,9 +93,14 @@ void init_cache()
   // partiendo de que se necesita solo un cache
   // se emplea cache de instrucciones como el cache
   // unificado
-
-
-  
+  icache.size = cache_isize;
+  icache.associativity = cache_assoc;
+  icache.n_sets = (icache.size) / (cache_block_size * icache.associativity);
+  icache.index_mask = get_index_mask(icache.n_sets, cache_block_size, address_size);
+  icache.index_mask_offset = address_size - LOG2(cache_block_size) - LOG2(icache.n_sets);
+  icache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
+  icache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
+  icache.set_contents = (int *)malloc(sizeof(int) * icache.n_sets);
 }
 /************************************************************/
 
@@ -239,7 +244,7 @@ void print_stats()
 int get_index_mask(int n_sets, int words_per_block, int address_size) {
   int tag_bits = address_size - LOG2(words_per_block) - LOG2(n_sets);
   int offset_bits = address_size - tag_bits;
-  int mask = 0;
+  unsigned mask = 0;
 
   for (int i = 0; i < tag_bits; i++) {
     mask += pow(2, i);
