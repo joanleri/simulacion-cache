@@ -125,6 +125,7 @@ void perform_access(addr, access_type)
 void flush()
 {
   // TODO: implementación
+  // TODO 1: hacer una llamada de free() por cada malloc realizado
 }
 /************************************************************/
 
