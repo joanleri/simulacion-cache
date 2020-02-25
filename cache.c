@@ -24,11 +24,12 @@ static int words_per_block = DEFAULT_CACHE_BLOCK_SIZE / WORD_SIZE;
 static int cache_assoc = DEFAULT_CACHE_ASSOC;
 static int cache_writeback = DEFAULT_CACHE_WRITEBACK;
 static int cache_writealloc = DEFAULT_CACHE_WRITEALLOC;
+static int address_size = DEFAULT_ADDRESS_SIZE;
 
 /* cache model data structures */
 static Pcache ptr_icache; // apuntador a cache de instrucciones
 static Pcache ptr_dcache; // apuntador a cache de datos
-static cache icache; // cache de instrucciones
+static cache icache; // cache de instrucciones, o cache unico en caso unificado
 static cache dcache; // cache de datos
 static cache_stat cache_stat_inst; // estadísticas del cache de instrucciones
 static cache_stat cache_stat_data; // estadísticas del cache de datos
@@ -89,7 +90,12 @@ void set_cache_param(param, value)
 // (definidas en el archivo cache.h)
 void init_cache()
 {
-  // TODO: implementación
+  // partiendo de que se necesita solo un cache
+  // se emplea cache de instrucciones como el cache
+  // unificado
+
+
+  
 }
 /************************************************************/
 
@@ -227,3 +233,18 @@ void print_stats()
 	 cache_stat_data.copies_back);
 }
 /************************************************************/
+
+/************************************************************/
+/* helper function to calculate inex mask*/
+int get_index_mask(int n_sets, int words_per_block, int address_size) {
+  int tag_bits = address_size - LOG2(words_per_block) - LOG2(n_sets);
+  int offset_bits = address_size - tag_bits;
+  int mask = 0;
+
+  for (int i = 0; i < tag_bits; i++) {
+    mask += pow(2, i);
+  }
+
+  mask = mask << offset_bits;
+  return mask;
+}
