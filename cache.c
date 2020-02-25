@@ -90,6 +90,10 @@ void set_cache_param(param, value)
 // (definidas en el archivo cache.h)
 void init_cache()
 {
+  // initialize cache stats
+  init_cache_stats(&cache_stat_inst);
+  init_cache_stats(&cache_stat_data);
+
   // partiendo de que se necesita solo un cache
   // se emplea cache de instrucciones como el cache
   // unificado
@@ -104,6 +108,29 @@ void init_cache()
   initialize_null(icache.LRU_tail, icache.n_sets);
   icache.set_contents = (int *)malloc(sizeof(int) * icache.n_sets);
   initialize_zeros(icache.set_contents, icache.n_sets);
+
+  if (cache_split) {
+    // tenemos que inicializar un cache de datos
+    dcache.size = cache_dsize;
+    dcache.associativity = cache_assoc;
+    dcache.n_sets = (dcache.size) / (cache_block_size * dcache.associativity);
+    dcache.index_mask = get_index_mask(dcache.n_sets, cache_block_size, address_size);
+    dcache.index_mask_offset = address_size - LOG2(cache_block_size) - LOG2(dcache.n_sets);
+    dcache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * dcache.n_sets);
+    initialize_null(dcache.LRU_head, dcache.n_sets);
+    dcache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * dcache.n_sets);
+    initialize_null(dcache.LRU_tail, dcache.n_sets);
+    dcache.set_contents = (int *)malloc(sizeof(int) * dcache.n_sets);
+    initialize_zeros(dcache.set_contents, dcache.n_sets);
+
+    // initializing separate pointers
+    ptr_icache = &icache;
+    ptr_dcache = &dcache;
+  } else {
+    // directing both pointers to unified cache (icache variable)
+    ptr_icache = &icache;
+    ptr_dcache = &icache;
+  }
 }
 /************************************************************/
 
@@ -266,8 +293,17 @@ void initialize_zeros(int *array, int number_of_items) {
 }
 
 /* helper function to initialize array with NULL */
-void initialize_null(int *array, int number_of_items) {
+void initialize_null(Pcache_line *array, int number_of_items) {
   for (int i = 0; i < number_of_items; i++) {
     array[i] = NULL;
   }
+}
+
+/* helper function to intit cache_stat's members with zeros */
+void init_cache_stats(Pcache_stat c_stats) {
+  c_stats->accesses = 0;
+  c_stats->misses = 0;
+  c_stats->replacements = 0;
+  c_stats->demand_fetches = 0;
+  c_stats->copies_back = 0;
 }

@@ -89,6 +89,7 @@ void print_stats();
 int get_index_mask();
 void initialize_zeros();
 void initialize_null();
+void init_cache_stats();
 
 
 /* macros */
