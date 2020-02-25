@@ -87,6 +87,8 @@ void insert();
 void dump_settings();
 void print_stats();
 int get_index_mask();
+void initialize_zeros();
+void initialize_null();
 
 
 /* macros */

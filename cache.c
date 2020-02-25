@@ -99,8 +99,11 @@ void init_cache()
   icache.index_mask = get_index_mask(icache.n_sets, cache_block_size, address_size);
   icache.index_mask_offset = address_size - LOG2(cache_block_size) - LOG2(icache.n_sets);
   icache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
+  initialize_null(icache.LRU_head, icache.n_sets);
   icache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
+  initialize_null(icache.LRU_tail, icache.n_sets);
   icache.set_contents = (int *)malloc(sizeof(int) * icache.n_sets);
+  initialize_zeros(icache.set_contents, icache.n_sets);
 }
 /************************************************************/
 
@@ -252,4 +255,18 @@ int get_index_mask(int n_sets, int words_per_block, int address_size) {
 
   mask = mask << offset_bits;
   return mask;
+}
+
+/* helper function to initialize array with zeros */
+void initialize_zeros(int *array, int number_of_items) {
+  for (int i = 0; i < number_of_items; i++) {
+    array[i] = 0;
+  }
+}
+
+/* helper function to initialize array with NULL */
+void initialize_null(int *array, int number_of_items) {
+  for (int i = 0; i < number_of_items; i++) {
+    array[i] = NULL;
+  }
 }
