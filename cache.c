@@ -317,22 +317,26 @@ void init_cache_stats(Pcache_stat c_stats) {
   c_stats->copies_back = 0;
 }
 
+/* Responsible of empty memory from a Pcache */
 void emptyPointer(Pcache *pointer) {
   free(pointer);
-  printf("Memoria liberada de Pointer\n");
+  printf("Free memory from Pointer\n");
 }
 
+/* Responsible of empty memory from a cache */
 void emptyCache(cache *cache) {
   free(cache);
-  printf("Memoria liberada de Cache\n");
+  printf("Free memory from Cache\n");
 }
 
+/* Responsible of empty memory from a Pcache_line */
 void emptyCacheLine(Pcache_line *line) {
   free(line);
-  printf("Memoria liberada de Linea de Cache\n");
+  printf("Free memory from Cache Line\n");
 }
 
+/* Responsible of empty memory from a int */
 void emptyInt(int *number) {
   free(number);
-  printf("Memoria liberada de Entero\n");
+  printf("Free memory from Integer\n");
 }
