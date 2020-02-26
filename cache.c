@@ -143,6 +143,13 @@ void init_cache()
 void perform_access(addr, access_type)
   unsigned addr, access_type;
 {
+  /*
+  * ACCESS TYPE
+  * 0 - Data load reference
+  * 1 - Data store reference
+  * 2 - Instruction load reference
+  */
+
   countAccesses(access_type);
   int index = getLineIndex(addr, access_type);
   int is_hit = isHit(addr, access_type, index);
@@ -406,7 +413,7 @@ void print_cache_status() {
   printf("\n*** END OF CACHE STATUS ***\n\n");
 }
 
-void countAccesses(int number) {
+void countAccesses(unsigned number) {
   if (number < 2) {
     cache_stat_data.accesses++;
   } else {
@@ -444,7 +451,7 @@ int isHit(addr, access_type, index)
     element = ptr_dcache->LRU_head[index];
     tag = getTag(addr, ptr_dcache->n_sets);
   } else {
-    element = ptr_dcache->LRU_head[index];
+    element = ptr_icache->LRU_head[index];
     tag = getTag(addr, ptr_icache->n_sets);
   }
   while (element != NULL && tag != element->tag) {
