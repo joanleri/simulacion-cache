@@ -22,7 +22,7 @@ int main(argc, argv)
   // Inicializa la memoria cache
   init_cache();
   // Pasa uno por uno las instrucciones de los archivos *.trace al simulador del cache
-  play_trace(traceFile);
+  // play_trace(traceFile);
   // Imprime los resultados estadísticos de la simulación el cache
   print_stats();
 }
