@@ -151,8 +151,17 @@ void perform_access(addr, access_type)
 // la memoria cache.
 void flush()
 {
-  // TODO: implementación
-  // TODO 1: hacer una llamada de free() por cada malloc realizado
+  printf("Flush variables' values\n");
+  emptyPointer(&ptr_icache);
+  emptyPointer(&ptr_dcache);
+  emptyCache(&icache);
+  emptyCache(&dcache);
+  emptyCacheLine(icache.LRU_head);
+  emptyCacheLine(icache.LRU_tail);
+  emptyCacheLine(dcache.LRU_head);
+  emptyCacheLine(dcache.LRU_tail);
+  emptyInt(icache.set_contents);
+  emptyInt(dcache.set_contents);
 }
 /************************************************************/
 
@@ -306,4 +315,24 @@ void init_cache_stats(Pcache_stat c_stats) {
   c_stats->replacements = 0;
   c_stats->demand_fetches = 0;
   c_stats->copies_back = 0;
+}
+
+void emptyPointer(Pcache *pointer) {
+  free(pointer);
+  printf("Memoria liberada de Pointer\n");
+}
+
+void emptyCache(cache *cache) {
+  free(cache);
+  printf("Memoria liberada de Cache\n");
+}
+
+void emptyCacheLine(Pcache_line *line) {
+  free(line);
+  printf("Memoria liberada de Linea de Cache\n");
+}
+
+void emptyInt(int *number) {
+  free(number);
+  printf("Memoria liberada de Entero\n");
 }

@@ -90,7 +90,10 @@ int get_index_mask();
 void initialize_zeros();
 void initialize_null();
 void init_cache_stats();
-
+void emptyPointer();
+void emptyCache();
+void emptyCacheLine();
+void emptyInt();
 
 /* macros */
 #define LOG2(x) ((int) rint((log((double) (x))) / (log(2.0))))
