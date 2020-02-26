@@ -90,7 +90,10 @@ int get_index_mask();
 void initialize_zeros();
 void initialize_null();
 void init_cache_stats();
-
+void binary_representation();
+void print_array_ints();
+void print_array_lines();
+void print_cache_status();
 
 /* macros */
 #define LOG2(x) ((int) rint((log((double) (x))) / (log(2.0))))
