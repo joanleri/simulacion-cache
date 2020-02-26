@@ -101,7 +101,7 @@ void init_cache()
   icache.associativity = cache_assoc;
   icache.n_sets = (icache.size) / (cache_block_size * icache.associativity);
   icache.index_mask = get_index_mask(icache.n_sets, cache_block_size, address_size);
-  icache.index_mask_offset = address_size - (address_size - LOG2(cache_block_size) - LOG2(icache.n_sets));
+  icache.index_mask_offset = LOG2(cache_block_size);
   icache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
   initialize_null(icache.LRU_head, icache.n_sets);
   icache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
@@ -115,7 +115,7 @@ void init_cache()
     dcache.associativity = cache_assoc;
     dcache.n_sets = (dcache.size) / (cache_block_size * dcache.associativity);
     dcache.index_mask = get_index_mask(dcache.n_sets, cache_block_size, address_size);
-    dcache.index_mask_offset = address_size - (address_size - LOG2(cache_block_size) - LOG2(dcache.n_sets));
+    dcache.index_mask_offset = LOG2(cache_block_size);
     dcache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * dcache.n_sets);
     initialize_null(dcache.LRU_head, dcache.n_sets);
     dcache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * dcache.n_sets);
@@ -142,11 +142,8 @@ void init_cache()
 void perform_access(addr, access_type)
   unsigned addr, access_type;
 {
-  if (access_type < 2) {
-    cache_stat_data.accesses++;
-  } else {
-    cache_stat_inst.accesses++;
-  }
+  countAccesses(access_type);
+
 }
 /************************************************************/
 
@@ -283,16 +280,15 @@ void print_stats()
 /************************************************************/
 /* helper function to calculate inex mask*/
 int get_index_mask(int n_sets, int words_per_block, int address_size) {
-  int tag_bits = address_size - LOG2(words_per_block) - LOG2(n_sets);
-  int offset_bits = address_size - tag_bits;
+  int w = LOG2(words_per_block);
+  int x = LOG2(n_sets);
   unsigned mask = 0;
 
-  for (int i = 0; i < tag_bits; i++) {
+  for (int i = 0; i < x; i++) {
     mask += pow(2, i);
   }
 
-  mask = mask << offset_bits;
-  return mask;
+  return mask << w;
 }
 
 /* helper function to initialize array with zeros */
@@ -398,5 +394,13 @@ void print_cache_status() {
     print_array_lines(dcache.LRU_tail, dcache.n_sets);
     printf("  set_contents:  ");
     print_array_ints(dcache.set_contents, dcache.n_sets);
+  }
+}
+
+void countAccesses(int number) {
+  if (number < 2) {
+    cache_stat_data.accesses++;
+  } else {
+    cache_stat_inst.accesses++;
   }
 }
