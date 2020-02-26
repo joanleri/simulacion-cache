@@ -142,7 +142,6 @@ void init_cache()
 void perform_access(addr, access_type)
   unsigned addr, access_type;
 {
-  printf("Accedido");
   if (access_type < 2) {
     cache_stat_data.accesses++;
   } else {
@@ -158,10 +157,6 @@ void perform_access(addr, access_type)
 void flush()
 {
   printf("Flush variables' values\n");
-  emptyPointer(&ptr_icache);
-  emptyPointer(&ptr_dcache);
-  emptyCache(&icache);
-  emptyCache(&dcache);
   emptyCacheLine(icache.LRU_head);
   emptyCacheLine(icache.LRU_tail);
   emptyCacheLine(dcache.LRU_head);
@@ -321,18 +316,6 @@ void init_cache_stats(Pcache_stat c_stats) {
   c_stats->replacements = 0;
   c_stats->demand_fetches = 0;
   c_stats->copies_back = 0;
-}
-
-/* Responsible of empty memory from a Pcache */
-void emptyPointer(Pcache *pointer) {
-  free(pointer);
-  printf("Free memory from Pointer\n");
-}
-
-/* Responsible of empty memory from a cache */
-void emptyCache(cache *cache) {
-  free(cache);
-  printf("Free memory from Cache\n");
 }
 
 /* Responsible of empty memory from a Pcache_line */
