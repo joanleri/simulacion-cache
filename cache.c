@@ -144,11 +144,11 @@ void perform_access(addr, access_type)
 {
   countAccesses(access_type);
   int index = getLineIndex(addr, access_type);
-  int hit = isHit(addr, access_type, index);
+  int is_hit = isHit(addr, access_type, index);
   if (access_type < 2) {
-    cache_stat_data.misses += !hit;
+    cache_stat_data.misses += !is_hit;
   } else {
-    cache_stat_inst.misses += !hit;
+    cache_stat_inst.misses += !is_hit;
   }
 
 }
@@ -412,6 +412,7 @@ void countAccesses(int number) {
   }
 }
 
+/* helper function to get line index */
 int getLineIndex(addr, access_type)
   unsigned addr, access_type;
 {
@@ -422,6 +423,7 @@ int getLineIndex(addr, access_type)
   }
 }
 
+/* helper function to get tag from memory address */
 unsigned getTag(addr, nLines)
   unsigned addr, nLines;
 {
@@ -429,6 +431,7 @@ unsigned getTag(addr, nLines)
   return addr >> offset;
 }
 
+/* helper function to check for hits */
 int isHit(addr, access_type, index)
   unsigned addr, access_type;
   int index;
