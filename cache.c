@@ -132,9 +132,6 @@ void init_cache()
     ptr_dcache = &icache;
   }
 
-  // TODO: Borrar
-  print_cache_status();
-  flush();
 }
 /************************************************************/
 
@@ -145,7 +142,12 @@ void init_cache()
 void perform_access(addr, access_type)
   unsigned addr, access_type;
 {
-  // TODO: implementación
+  printf("Accedido");
+  if (access_type < 2) {
+    cache_stat_data.accesses++;
+  } else {
+    cache_stat_inst.accesses++;
+  }
 }
 /************************************************************/
 

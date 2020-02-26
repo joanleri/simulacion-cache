@@ -95,6 +95,7 @@ void emptyCache();
 void emptyCacheLine();
 void emptyInt();
 void binary_representation();
+void print_binary_representation();
 void print_array_ints();
 void print_array_lines();
 void print_cache_status();

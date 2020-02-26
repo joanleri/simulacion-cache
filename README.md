@@ -10,7 +10,7 @@ Visualizar el funcionamiento del componente **caché** con sus diferentes varian
     - Windows: Instalar `CodeBlocks`
 2. Ubicarse en la `raíz` del proyecto
 3. Ejecutar `gcc -g *.c -o sim.exe`
-    - En caso de no usar windows, omitir el `.exe`
+    - En caso de no usar Windows, omitir el `.exe`
 
 # Utilización
 `["./"]sim[".exe"]`
