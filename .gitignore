@@ -53,3 +53,9 @@ dkms.conf
 
 # Not needed VS configuration
 /.vscode
+
+tester.c
+test
+
+sim
+sim.*

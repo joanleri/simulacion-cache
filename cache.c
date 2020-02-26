@@ -24,11 +24,12 @@ static int words_per_block = DEFAULT_CACHE_BLOCK_SIZE / WORD_SIZE;
 static int cache_assoc = DEFAULT_CACHE_ASSOC;
 static int cache_writeback = DEFAULT_CACHE_WRITEBACK;
 static int cache_writealloc = DEFAULT_CACHE_WRITEALLOC;
+static int address_size = DEFAULT_ADDRESS_SIZE;
 
 /* cache model data structures */
 static Pcache ptr_icache; // apuntador a cache de instrucciones
 static Pcache ptr_dcache; // apuntador a cache de datos
-static cache icache; // cache de instrucciones
+static cache icache; // cache de instrucciones, o cache unico en caso unificado
 static cache dcache; // cache de datos
 static cache_stat cache_stat_inst; // estadísticas del cache de instrucciones
 static cache_stat cache_stat_data; // estadísticas del cache de datos
@@ -89,7 +90,47 @@ void set_cache_param(param, value)
 // (definidas en el archivo cache.h)
 void init_cache()
 {
-  // TODO: implementación
+  // initialize cache stats
+  init_cache_stats(&cache_stat_inst);
+  init_cache_stats(&cache_stat_data);
+
+  // partiendo de que se necesita solo un cache
+  // se emplea cache de instrucciones como el cache
+  // unificado
+  icache.size = cache_isize;
+  icache.associativity = cache_assoc;
+  icache.n_sets = (icache.size) / (cache_block_size * icache.associativity);
+  icache.index_mask = get_index_mask(icache.n_sets, cache_block_size, address_size);
+  icache.index_mask_offset = address_size - LOG2(cache_block_size) - LOG2(icache.n_sets);
+  icache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
+  initialize_null(icache.LRU_head, icache.n_sets);
+  icache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
+  initialize_null(icache.LRU_tail, icache.n_sets);
+  icache.set_contents = (int *)malloc(sizeof(int) * icache.n_sets);
+  initialize_zeros(icache.set_contents, icache.n_sets);
+
+  if (cache_split) {
+    // tenemos que inicializar un cache de datos
+    dcache.size = cache_dsize;
+    dcache.associativity = cache_assoc;
+    dcache.n_sets = (dcache.size) / (cache_block_size * dcache.associativity);
+    dcache.index_mask = get_index_mask(dcache.n_sets, cache_block_size, address_size);
+    dcache.index_mask_offset = address_size - LOG2(cache_block_size) - LOG2(dcache.n_sets);
+    dcache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * dcache.n_sets);
+    initialize_null(dcache.LRU_head, dcache.n_sets);
+    dcache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * dcache.n_sets);
+    initialize_null(dcache.LRU_tail, dcache.n_sets);
+    dcache.set_contents = (int *)malloc(sizeof(int) * dcache.n_sets);
+    initialize_zeros(dcache.set_contents, dcache.n_sets);
+
+    // initializing separate pointers
+    ptr_icache = &icache;
+    ptr_dcache = &dcache;
+  } else {
+    // directing both pointers to unified cache (icache variable)
+    ptr_icache = &icache;
+    ptr_dcache = &icache;
+  }
 }
 /************************************************************/
 
@@ -111,6 +152,7 @@ void perform_access(addr, access_type)
 void flush()
 {
   // TODO: implementación
+  // TODO 1: hacer una llamada de free() por cada malloc realizado
 }
 /************************************************************/
 
@@ -227,3 +269,41 @@ void print_stats()
 	 cache_stat_data.copies_back);
 }
 /************************************************************/
+
+/************************************************************/
+/* helper function to calculate inex mask*/
+int get_index_mask(int n_sets, int words_per_block, int address_size) {
+  int tag_bits = address_size - LOG2(words_per_block) - LOG2(n_sets);
+  int offset_bits = address_size - tag_bits;
+  unsigned mask = 0;
+
+  for (int i = 0; i < tag_bits; i++) {
+    mask += pow(2, i);
+  }
+
+  mask = mask << offset_bits;
+  return mask;
+}
+
+/* helper function to initialize array with zeros */
+void initialize_zeros(int *array, int number_of_items) {
+  for (int i = 0; i < number_of_items; i++) {
+    array[i] = 0;
+  }
+}
+
+/* helper function to initialize array with NULL */
+void initialize_null(Pcache_line *array, int number_of_items) {
+  for (int i = 0; i < number_of_items; i++) {
+    array[i] = NULL;
+  }
+}
+
+/* helper function to intit cache_stat's members with zeros */
+void init_cache_stats(Pcache_stat c_stats) {
+  c_stats->accesses = 0;
+  c_stats->misses = 0;
+  c_stats->replacements = 0;
+  c_stats->demand_fetches = 0;
+  c_stats->copies_back = 0;
+}

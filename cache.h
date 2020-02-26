@@ -15,6 +15,7 @@
 #define DEFAULT_CACHE_ASSOC 1
 #define DEFAULT_CACHE_WRITEBACK TRUE
 #define DEFAULT_CACHE_WRITEALLOC TRUE
+#define DEFAULT_ADDRESS_SIZE 32
 
 /* constants for settting cache parameters */
 #define CACHE_PARAM_BLOCK_SIZE 0
@@ -64,7 +65,7 @@ typedef struct cache_ {
   Pcache_line *LRU_head;	/* head of LRU list for each set */
   Pcache_line *LRU_tail;	/* tail of LRU list for each set */
   int *set_contents;		/* number of valid entries in set */
-  int contents;			/* number of valid entries in cache */
+  // int contents;			/* number of valid entries in cache (no le veo la utilidad) */
 } cache, *Pcache;
 
 typedef struct cache_stat_ {
@@ -85,6 +86,10 @@ void delete();
 void insert();
 void dump_settings();
 void print_stats();
+int get_index_mask();
+void initialize_zeros();
+void initialize_null();
+void init_cache_stats();
 
 
 /* macros */
