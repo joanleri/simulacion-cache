@@ -143,6 +143,13 @@ void perform_access(addr, access_type)
   unsigned addr, access_type;
 {
   countAccesses(access_type);
+  int index = getLineIndex(addr, access_type);
+  int hit = isHit(addr, access_type, index);
+  if (access_type < 2) {
+    cache_stat_data.misses += !hit;
+  } else {
+    cache_stat_inst.misses += !hit;
+  }
 
 }
 /************************************************************/
@@ -403,4 +410,40 @@ void countAccesses(int number) {
   } else {
     cache_stat_inst.accesses++;
   }
+}
+
+int getLineIndex(addr, access_type)
+  unsigned addr, access_type;
+{
+  if (access_type < 2) {
+    return (addr & ptr_dcache->index_mask) >> ptr_dcache->index_mask_offset;
+  } else {
+    return (addr & ptr_icache->index_mask) >> ptr_icache->index_mask_offset;
+  }
+}
+
+unsigned getTag(addr, nLines)
+  unsigned addr, nLines;
+{
+  int offset = LOG2(nLines) + LOG2(words_per_block);
+  return addr >> offset;
+}
+
+int isHit(addr, access_type, index)
+  unsigned addr, access_type;
+  int index;
+{
+  Pcache_line element;
+  unsigned tag;
+  if (access_type < 2) {
+    element = ptr_dcache->LRU_head[index];
+    tag = getTag(addr, ptr_dcache->n_sets);
+  } else {
+    element = ptr_dcache->LRU_head[index];
+    tag = getTag(addr, ptr_icache->n_sets);
+  }
+  while (element != NULL && tag != element->tag) {
+    element = element->LRU_next;
+  }
+  return element != NULL && tag == element->tag;
 }
