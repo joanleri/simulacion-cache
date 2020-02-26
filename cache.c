@@ -101,7 +101,7 @@ void init_cache()
   icache.associativity = cache_assoc;
   icache.n_sets = (icache.size) / (cache_block_size * icache.associativity);
   icache.index_mask = get_index_mask(icache.n_sets, cache_block_size, address_size);
-  icache.index_mask_offset = address_size - LOG2(cache_block_size) - LOG2(icache.n_sets);
+  icache.index_mask_offset = address_size - (address_size - LOG2(cache_block_size) - LOG2(icache.n_sets));
   icache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
   initialize_null(icache.LRU_head, icache.n_sets);
   icache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * icache.n_sets);
@@ -115,7 +115,7 @@ void init_cache()
     dcache.associativity = cache_assoc;
     dcache.n_sets = (dcache.size) / (cache_block_size * dcache.associativity);
     dcache.index_mask = get_index_mask(dcache.n_sets, cache_block_size, address_size);
-    dcache.index_mask_offset = address_size - LOG2(cache_block_size) - LOG2(dcache.n_sets);
+    dcache.index_mask_offset = address_size - (address_size - LOG2(cache_block_size) - LOG2(dcache.n_sets));
     dcache.LRU_head = (Pcache_line *)malloc(sizeof(Pcache_line) * dcache.n_sets);
     initialize_null(dcache.LRU_head, dcache.n_sets);
     dcache.LRU_tail = (Pcache_line *)malloc(sizeof(Pcache_line) * dcache.n_sets);
@@ -131,6 +131,10 @@ void init_cache()
     ptr_icache = &icache;
     ptr_dcache = &icache;
   }
+
+  // TODO: Borrar
+  print_cache_status();
+  flush();
 }
 /************************************************************/
 
@@ -153,6 +157,19 @@ void flush()
 {
   // TODO: implementación
   // TODO 1: hacer una llamada de free() por cada malloc realizado
+
+  /* ------------------------------------------------------- */
+  /* Borrar */
+  free(icache.LRU_head);
+  free(icache.LRU_tail);
+  free(icache.set_contents);
+
+  if (cache_split) {
+    free(dcache.LRU_head);
+    free(dcache.LRU_tail);
+    free(dcache.set_contents);
+  }
+  /* ------------------------------------------------------- */
 }
 /************************************************************/
 
@@ -223,7 +240,7 @@ void dump_settings()
     printf("  Size: \t%d\n", cache_usize);
   }
   printf("  Associativity: \t%d\n", cache_assoc);
-  printf("  Block size: \t%d\n", cache_block_size);
+  printf("  Block size: \t\t%d\n", cache_block_size);
   printf("  Write policy: \t%s\n", 
 	 cache_writeback ? "WRITE BACK" : "WRITE THROUGH");
   printf("  Allocation policy: \t%s\n",
@@ -295,15 +312,86 @@ void initialize_zeros(int *array, int number_of_items) {
 /* helper function to initialize array with NULL */
 void initialize_null(Pcache_line *array, int number_of_items) {
   for (int i = 0; i < number_of_items; i++) {
-    array[i] = NULL;
+    array[i] = (Pcache_line)NULL;
   }
 }
 
-/* helper function to intit cache_stat's members with zeros */
+/* helper function to init cache_stat's members with zeros */
 void init_cache_stats(Pcache_stat c_stats) {
   c_stats->accesses = 0;
   c_stats->misses = 0;
   c_stats->replacements = 0;
   c_stats->demand_fetches = 0;
   c_stats->copies_back = 0;
+}
+
+/* helper function to print binary representation of a number */
+void print_binary_representation(unsigned number) {
+  if (number > 1) {
+    print_binary_representation(number / 2);
+  }
+  printf("%d", number % 2);
+}
+
+/* helper function to print arrays elements */
+void print_array_ints(int *array, int number_of_items) {
+  printf("[");
+  for (int i = 0; i < number_of_items; i++) {
+    printf("%d", array[i]);
+    if (i < (number_of_items - 1)) {
+      printf(", ");
+    }
+  }
+  printf("]\n");
+}
+
+/* helper function to print array cache line address */
+void print_array_lines(Pcache_line *array, int number_of_items) {
+  printf("[");
+  for (int i = 0; i < number_of_items; i++) {
+    if (array[i] != NULL) {
+      printf("LINE");
+    } else {
+      printf("NULL");
+    }
+    if (i < (number_of_items - 1)) {
+      printf(", ");
+    }
+  }
+  printf("]\n");
+}
+
+/* helper function to debug cache */
+void print_cache_status() {
+  printf("\n*** CACHE STATUS ***\n");
+  printf(" INSTRUCTIONS CACHE\n");
+  printf("  size:  %d\n", icache.size);
+  printf("  associativity:  %d\n", icache.associativity);
+  printf("  sets:  %d\n", icache.n_sets);
+  printf("  mask:  ");
+  print_binary_representation(icache.index_mask);
+  printf("\n");
+  printf("  mask offset:  %d\n", icache.index_mask_offset);
+  printf("  LRU_head:  ");
+  print_array_lines(icache.LRU_head, icache.n_sets);
+  printf("  LRU_tail:  ");
+  print_array_lines(icache.LRU_tail, icache.n_sets);
+  printf("  set_contents:  ");
+  print_array_ints(icache.set_contents, icache.n_sets);
+  if (cache_split) {
+    printf(" DATA CACHE\n");
+    printf("  size:  %d\n", dcache.size);
+    printf("  associativity:  %d\n", dcache.associativity);
+    printf("  sets:  %d\n", dcache.n_sets);
+    printf("  mask:  ");
+    print_binary_representation(dcache.index_mask);
+    printf("\n");
+    printf("  mask offset:  %d\n", dcache.index_mask_offset);
+    printf("  LRU_head:  ");
+    print_array_lines(dcache.LRU_head, dcache.n_sets);
+    printf("  LRU_tail:  ");
+    print_array_lines(dcache.LRU_tail, dcache.n_sets);
+    printf("  set_contents:  ");
+    print_array_ints(dcache.set_contents, dcache.n_sets);
+  }
 }
