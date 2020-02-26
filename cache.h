@@ -94,6 +94,10 @@ void emptyPointer();
 void emptyCache();
 void emptyCacheLine();
 void emptyInt();
+void binary_representation();
+void print_array_ints();
+void print_array_lines();
+void print_cache_status();
 
 /* macros */
 #define LOG2(x) ((int) rint((log((double) (x))) / (log(2.0))))
