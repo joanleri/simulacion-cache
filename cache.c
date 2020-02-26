@@ -132,6 +132,7 @@ void init_cache()
     ptr_dcache = &icache;
   }
 
+  print_cache_status();
 }
 /************************************************************/
 
@@ -371,7 +372,7 @@ void print_array_lines(Pcache_line *array, int number_of_items) {
 
 /* helper function to debug cache */
 void print_cache_status() {
-  printf("\n*** CACHE STATUS ***\n");
+  printf("\n****** CACHE STATUS *******\n\n");
   printf(" INSTRUCTIONS CACHE\n");
   printf("  size:  %d\n", icache.size);
   printf("  associativity:  %d\n", icache.associativity);
@@ -380,12 +381,12 @@ void print_cache_status() {
   print_binary_representation(icache.index_mask);
   printf("\n");
   printf("  mask offset:  %d\n", icache.index_mask_offset);
-  printf("  LRU_head:  ");
-  print_array_lines(icache.LRU_head, icache.n_sets);
-  printf("  LRU_tail:  ");
-  print_array_lines(icache.LRU_tail, icache.n_sets);
-  printf("  set_contents:  ");
-  print_array_ints(icache.set_contents, icache.n_sets);
+  // printf("  LRU_head:  ");
+  // print_array_lines(icache.LRU_head, icache.n_sets);
+  // printf("  LRU_tail:  ");
+  // print_array_lines(icache.LRU_tail, icache.n_sets);
+  // printf("  set_contents:  ");
+  // print_array_ints(icache.set_contents, icache.n_sets);
   if (cache_split) {
     printf(" DATA CACHE\n");
     printf("  size:  %d\n", dcache.size);
@@ -395,13 +396,14 @@ void print_cache_status() {
     print_binary_representation(dcache.index_mask);
     printf("\n");
     printf("  mask offset:  %d\n", dcache.index_mask_offset);
-    printf("  LRU_head:  ");
-    print_array_lines(dcache.LRU_head, dcache.n_sets);
-    printf("  LRU_tail:  ");
-    print_array_lines(dcache.LRU_tail, dcache.n_sets);
-    printf("  set_contents:  ");
-    print_array_ints(dcache.set_contents, dcache.n_sets);
+    // printf("  LRU_head:  ");
+    // print_array_lines(dcache.LRU_head, dcache.n_sets);
+    // printf("  LRU_tail:  ");
+    // print_array_lines(dcache.LRU_tail, dcache.n_sets);
+    // printf("  set_contents:  ");
+    // print_array_ints(dcache.set_contents, dcache.n_sets);
   }
+  printf("\n*** END OF CACHE STATUS ***\n\n");
 }
 
 void countAccesses(int number) {
