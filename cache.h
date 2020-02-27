@@ -103,6 +103,8 @@ void countAccesses();
 int getLineIndex();
 unsigned getTag();
 int isHit();
+Pcache_line get_empty_line();
+int full_insert();
 
 /* macros */
 #define LOG2(x) ((int) rint((log((double) (x))) / (log(2.0))))

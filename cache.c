@@ -145,14 +145,33 @@ void perform_access(addr, access_type)
 {
   /*
   * ACCESS TYPE
-  * 0 - Data load reference
-  * 1 - Data store reference
+  * 0 - Data load reference - lectura
+  * 1 - Data store reference - escritura
   * 2 - Instruction load reference
   */
 
   countAccesses(access_type);
   int index = getLineIndex(addr, access_type);
   int is_hit = isHit(addr, access_type, index);
+
+  if (!is_hit) {
+    if (access_type == 0) {
+        cache_stat_data.replacements += full_insert(addr, ptr_dcache, index);
+        cache_stat_data.demand_fetches++;
+    } else if (access_type == 1) {
+      if (cache_writealloc) {
+        cache_stat_data.replacements += full_insert(addr, ptr_dcache, index);
+        cache_stat_data.demand_fetches++;
+      } else {
+        cache_stat_data.copies_back++;
+      }
+    } else if (access_type == 2) {
+      cache_stat_inst.replacements += full_insert(addr, ptr_icache, index);
+      cache_stat_inst.demand_fetches++;
+    }
+  }
+
+  // count misses
   if (access_type < 2) {
     cache_stat_data.misses += !is_hit;
   } else {
@@ -458,4 +477,31 @@ int isHit(addr, access_type, index)
     element = element->LRU_next;
   }
   return element != NULL && tag == element->tag;
+}
+
+/* allocate an empty cache line */
+Pcache_line get_empty_line() {
+    Pcache_line ptr_new_line = (Pcache_line)malloc(sizeof(Pcache_line));
+    ptr_new_line->dirty = 0;
+    ptr_new_line->LRU_next = NULL;
+    ptr_new_line->LRU_prev = NULL;
+    return ptr_new_line;
+}
+
+/* checks cache associativity and inserts 
+ * returns TRUE (1) if a replacemnt is done
+ * FALSE (0) otherwise 
+*/
+int full_insert(unsigned addr, Pcache ptr_cache, int line_number) {
+  int replacement = FALSE;
+  Pcache_line ptr_new_line = get_empty_line();
+  ptr_new_line->tag = getTag(addr, ptr_cache->n_sets);
+  
+  if (ptr_cache->set_contents[line_number] > ptr_cache->associativity) {
+    delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, *(ptr_cache->LRU_tail));
+    replacement = TRUE;
+  }
+
+  insert(ptr_cache->LRU_head, ptr_cache->LRU_tail, ptr_new_line);
+  return replacement;
 }
