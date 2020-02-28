@@ -76,6 +76,11 @@ typedef struct cache_stat_ {
   int copies_back;		/* number of write backs */
 } cache_stat, *Pcache_stat;
 
+typedef struct insertion_response_ {
+  int replacement;  /* True if last insertion produce a replacement */
+  int dirty_bit;    /* Value of dirty bit of line replaced */
+} insertion_response, *Pinsertion_response;
+
 
 /* function prototypes */
 void set_cache_param();
@@ -104,7 +109,8 @@ int getLineIndex();
 unsigned getTag();
 int isHit();
 Pcache_line get_empty_line();
-int full_insert();
+Pinsertion_response full_insert();
+Pinsertion_response get_new_insertion_response();
 
 /* macros */
 #define LOG2(x) ((int) rint((log((double) (x))) / (log(2.0))))

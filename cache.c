@@ -150,34 +150,76 @@ void perform_access(addr, access_type)
   * 2 - Instruction load reference
   */
 
+  // conteo del número de veces que se accede a memoria por el
+  // procesador
   countAccesses(access_type);
+
+  // obtenemos en qué línea/banco le corresponde a la
+  // dirección de memoria 
   int index = getLineIndex(addr, access_type);
+
+  // se verifica si el cache correspondiente contiene
+  // una línea con ese tag o no
   int is_hit = isHit(addr, access_type, index);
 
-  if (!is_hit) {
-    if (access_type == 0) {
-        cache_stat_data.replacements += full_insert(addr, ptr_dcache, index);
-        cache_stat_data.demand_fetches++;
-    } else if (access_type == 1) {
-      if (cache_writealloc) {
-        cache_stat_data.replacements += full_insert(addr, ptr_dcache, index);
-        cache_stat_data.demand_fetches++;
-      } else {
-        cache_stat_data.copies_back++;
-      }
-    } else if (access_type == 2) {
-      cache_stat_inst.replacements += full_insert(addr, ptr_icache, index);
-      cache_stat_inst.demand_fetches++;
-    }
-  }
-
-  // count misses
+  // conteo de número de misses
   if (access_type < 2) {
     cache_stat_data.misses += !is_hit;
   } else {
     cache_stat_inst.misses += !is_hit;
   }
 
+  // bloque de código para cuando no hubo un hit
+  if (!is_hit) {
+    if (access_type == 0) {
+      // lectura de bloque 
+      Pinsertion_response ptr_response = full_insert(addr, ptr_dcache, index);
+      cache_stat_data.replacements += ptr_response->replacement;
+      cache_stat_data.demand_fetches++;
+      free(ptr_response);
+    } else if (access_type == 1) {
+      // escritura a memoria
+      if (cache_writealloc) {
+        // traer a cache y escribir de acuerdo con política de hit write
+        Pinsertion_response ptr_response = full_insert(addr, ptr_dcache, index);
+        cache_stat_data.replacements += ptr_response->replacement;
+        cache_stat_data.demand_fetches++;
+        // TODO: checar si write through o write back
+        if (cache_writeback) {
+          // incrementamos en uno la estadística de copies back
+          // si la línea removida había sido modificada y tenemos
+          // plítica de write back
+          cache_stat_data.copies_back += ptr_response->dirty_bit;
+        }
+        free(ptr_response);
+      } else {
+        // solo escribir en memoria
+        cache_stat_data.copies_back++;
+      }
+    } else if (access_type == 2) {
+        Pinsertion_response ptr_response = full_insert(addr, ptr_icache, index);
+        cache_stat_inst.replacements += ptr_response->replacement;
+        cache_stat_inst.demand_fetches++;
+        free(ptr_response);
+    }
+  }
+
+  // bloque de código si hubo hit
+  if (is_hit) {
+    if (access_type == 0) {
+      /* TODO: al elemento referido tenemos que insertarlo al 
+       * principio de la lista para mantener esquema LRU
+      */
+    } else if (access_type == 1) {
+      /* TODO: lo anterior más verificar política de write
+       * hit
+      */
+    } else if (access_type == 2) {
+      /* TODO: al elemento referido tenemos que insertarlo al 
+       * principio de la lista para mantener esquema LRU
+      */
+    }
+  }
 }
 /************************************************************/
 
@@ -481,7 +523,7 @@ int isHit(addr, access_type, index)
 
 /* allocate an empty cache line */
 Pcache_line get_empty_line() {
-    Pcache_line ptr_new_line = (Pcache_line)malloc(sizeof(Pcache_line));
+    Pcache_line ptr_new_line = (Pcache_line)malloc(sizeof(cache_line));
     ptr_new_line->dirty = 0;
     ptr_new_line->LRU_next = NULL;
     ptr_new_line->LRU_prev = NULL;
@@ -492,16 +534,39 @@ Pcache_line get_empty_line() {
  * returns TRUE (1) if a replacemnt is done
  * FALSE (0) otherwise 
 */
-int full_insert(unsigned addr, Pcache ptr_cache, int line_number) {
-  int replacement = FALSE;
+Pinsertion_response full_insert(unsigned addr, Pcache ptr_cache, int line_number) {
+
+  // allocate a new response to return at the end of the function
+  Pinsertion_response ptr_response = get_new_insertion_response();
+
+  // get a new line that will be inserted in cache
   Pcache_line ptr_new_line = get_empty_line();
+
+  // add tag to new line for cache
   ptr_new_line->tag = getTag(addr, ptr_cache->n_sets);
   
+  // enter if there is no more room for the new line
+  // a line needs to be removed
   if (ptr_cache->set_contents[line_number] > ptr_cache->associativity) {
-    delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, *(ptr_cache->LRU_tail));
-    replacement = TRUE;
+
+    Pcache_line ptr_line_delete = *(ptr_cache->LRU_tail);
+    // we indicate that a replacement has occured as a product of the insertion
+    ptr_response->replacement = TRUE;
+    // we set the response's dirty bit to that of the evicted line (LRU)
+    ptr_response->dirty_bit = ptr_line_delete->dirty;
+    // we delete the line
+    delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, ptr_line_delete); 
   }
 
+  // insert the line asked
   insert(ptr_cache->LRU_head, ptr_cache->LRU_tail, ptr_new_line);
-  return replacement;
+  return ptr_response;
+}
+
+/* get a pointer to a new Pinsertion_response struct */
+Pinsertion_response get_new_insertion_response() {
+  Pinsertion_response ptr_response = (Pinsertion_response)malloc(sizeof(insertion_response));
+  ptr_response->dirty_bit = 0;
+  ptr_response->replacement = 0;
+  return ptr_response;
 }
