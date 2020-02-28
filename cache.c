@@ -184,7 +184,7 @@ void perform_access(addr, access_type)
         Pinsertion_response ptr_response = full_insert(addr, ptr_dcache, index);
         cache_stat_data.replacements += ptr_response->replacement;
         cache_stat_data.demand_fetches++;
-        // TODO: checar si write through o write back
+       
         if (cache_writeback) {
           // incrementamos en uno la estadística de copies back
           // si la línea removida había sido modificada y tenemos
@@ -192,10 +192,7 @@ void perform_access(addr, access_type)
           cache_stat_data.copies_back += ptr_response->dirty_bit;
         }
         free(ptr_response);
-      } else {
-        // solo escribir en memoria
-        cache_stat_data.copies_back++;
-      }
+      } 
     } else if (access_type == 2) {
         Pinsertion_response ptr_response = full_insert(addr, ptr_icache, index);
         cache_stat_inst.replacements += ptr_response->replacement;
@@ -207,17 +204,25 @@ void perform_access(addr, access_type)
   // bloque de código si hubo hit
   if (is_hit) {
     if (access_type == 0) {
-      /* TODO: al elemento referido tenemos que insertarlo al 
-       * principio de la lista para mantener esquema LRU
-      */
+      // busque datos para lectura en cache y estaban
+      reinsert_at_head(ptr_dcache, addr, index);
     } else if (access_type == 1) {
-      /* TODO: lo anterior más verificar política de write
-       * hit
-      */
+      // quise escribir en localidad de memoria y estaba en cache
+      reinsert_at_head(ptr_dcache, addr, index);
+      if (cache_writeback) {
+        // escribo solo en cache por lo que hay que modificar el dirty bit
+        Pcache_line wrote_line = get_referenced_line(ptr_dcache, addr, index);
+        wrote_line->dirty = 1;
+        reinsert_at_head(ptr_dcache, addr, index);
+      } else {
+        // entonces se tiene writethrough por lo que se puede ignorar
+        // dirty bit
+        reinsert_at_head(ptr_dcache, addr, index);
+        cache_stat_data.copies_back += 1;
+      }
     } else if (access_type == 2) {
-      /* TODO: al elemento referido tenemos que insertarlo al 
-       * principio de la lista para mantener esquema LRU
-      */
+      // busque una instrucción en cache y estaba
+      reinsert_at_head(ptr_icache, addr, index);
     }
   }
 }
@@ -570,4 +575,24 @@ Pinsertion_response get_new_insertion_response() {
   ptr_response->dirty_bit = 0;
   ptr_response->replacement = 0;
   return ptr_response;
+}
+
+/* get line from set with correct tag and returns a Pcache_line */
+Pcache_line get_referenced_line(Pcache ptr_cache, unsigned addr, int set_index) {
+  Pcache_line element = ptr_cache->LRU_head[set_index];
+  unsigned tag = getTag(addr, ptr_cache->n_sets);
+  while (element != NULL && tag != element->tag) {
+    element = element->LRU_next;
+  }
+  if (element == NULL) {
+    print("Error: se buscó una línea inexistente en set de cache.");
+  }
+  return element;
+}
+
+/* remove cache line and reinsert it at LRU head */
+void reinsert_at_head(Pcache ptr_cache, unsigned addr, int set_index) {
+  Pcache_line line_used = get_referenced_line(ptr_cache, addr, set_index);
+  delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, line_used);
+  insert(ptr_cache->LRU_head, line_used);
 }
