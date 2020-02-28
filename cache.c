@@ -90,7 +90,7 @@ void set_cache_param(param, value)
 // (definidas en el archivo cache.h)
 void init_cache()
 {
-  printf("Initializing cache...\n");
+  // printf("Initializing cache...\n");
   // initialize cache stats
   init_cache_stats(&cache_stat_inst);
   init_cache_stats(&cache_stat_data);
@@ -148,7 +148,7 @@ void perform_access(addr, access_type)
   * 1 - Data store reference - escritura
   * 2 - Instruction load reference
   */
-  printf("Performing access type %d - ", access_type);
+  // printf("Performing access type %d - ", access_type);
   // conteo del número de veces que se accede a memoria por el
   // procesador
   countAccesses(access_type);
@@ -156,13 +156,13 @@ void perform_access(addr, access_type)
   // obtenemos en qué línea/banco le corresponde a la
   // dirección de memoria 
   int index = getLineIndex(addr, access_type);
-  printf("Using line index %d - ", index);
+  // printf("Using line index %d - ", index);
 
   // se verifica si el cache correspondiente contiene
   // una línea con ese tag o no
   int is_hit = isHit(addr, access_type, index);
 
-  printf("%s...\n", (is_hit ? "HIT" : "MISS"));
+  // printf("%s...\n", (is_hit ? "HIT" : "MISS"));
 
   // conteo de número de misses
   if (access_type < 2) {
@@ -177,28 +177,35 @@ void perform_access(addr, access_type)
       // lectura de bloque 
       Pinsertion_response ptr_response = full_insert(addr, ptr_dcache, index);
       cache_stat_data.replacements += ptr_response->replacement;
-      cache_stat_data.demand_fetches += WORD_SIZE;
+      cache_stat_data.demand_fetches += words_per_block;
       free(ptr_response);
     } else if (access_type == 1) {
       // escritura a memoria
       if (cache_writealloc) {
         // traer a cache y escribir de acuerdo con política de hit write
+        // TODO: aquí hay que insertarlo sucio
         Pinsertion_response ptr_response = full_insert(addr, ptr_dcache, index);
         cache_stat_data.replacements += ptr_response->replacement;
-        cache_stat_data.demand_fetches += WORD_SIZE;
-       
+        cache_stat_data.demand_fetches += words_per_block;
+
         if (cache_writeback) {
           // incrementamos en uno la estadística de copies back
           // si la línea removida había sido modificada y tenemos
-          // plítica de write back
-          cache_stat_data.copies_back += ptr_response->dirty_bit * WORD_SIZE;
+          // política de write back
+          Pcache_line ptr_inserted_line = get_referenced_line(ptr_dcache, addr, index);
+          ptr_inserted_line->dirty = TRUE;
+          cache_stat_data.copies_back += ptr_response->dirty_bit * words_per_block;
+        } else {
+            cache_stat_data.copies_back += words_per_block;
         }
         free(ptr_response);
-      } 
+      } else {
+        cache_stat_data.copies_back += words_per_block;
+      }
     } else if (access_type == 2) {
         Pinsertion_response ptr_response = full_insert(addr, ptr_icache, index);
         cache_stat_inst.replacements += ptr_response->replacement;
-        cache_stat_inst.demand_fetches += WORD_SIZE;
+        cache_stat_inst.demand_fetches += words_per_block;
         free(ptr_response);
     }
   }
@@ -220,7 +227,7 @@ void perform_access(addr, access_type)
         // entonces se tiene writethrough por lo que se puede ignorar
         // dirty bit
         reinsert_at_head(ptr_dcache, addr, index);
-        cache_stat_data.copies_back += WORD_SIZE;
+        cache_stat_data.copies_back += words_per_block;
       }
     } else if (access_type == 2) {
       // busque una instrucción en cache y estaba
@@ -238,13 +245,13 @@ void flush()
 {
   printf("Flushing cache...\n");
   for (int i = 0; i < icache.n_sets; i++) {
-    printf("Flushig cache set no. %d...\n", i + 1);
+    // printf("Flushig cache set no. %d...\n", i + 1);
     Pcache_line ptr_next_element = icache.LRU_head[i];
     Pcache_line ptr_actual_element;
     for (int j = 0; j < icache.set_contents[i]; j++) {
-      printf("  flushing line no. %d...\n", j + 1);
+      // printf("  flushing line no. %d...\n", j + 1);
       ptr_actual_element = ptr_next_element;
-      cache_stat_inst.copies_back += ptr_actual_element->dirty * WORD_SIZE;
+      cache_stat_inst.copies_back += ptr_actual_element->dirty * words_per_block;
       ptr_next_element = ptr_actual_element->LRU_next;
       free(ptr_actual_element);
     }
@@ -257,7 +264,7 @@ void flush()
       Pcache_line ptr_actual_element;
       for (int j = 0; j < dcache.set_contents[i]; j++) {
         ptr_actual_element = ptr_next_element;
-        cache_stat_data.copies_back += ptr_actual_element->dirty * WORD_SIZE;
+        cache_stat_data.copies_back += ptr_actual_element->dirty * words_per_block;
         ptr_next_element = ptr_actual_element->LRU_next;
         free(ptr_actual_element);
       }
