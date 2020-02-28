@@ -177,7 +177,7 @@ void perform_access(addr, access_type)
       // lectura de bloque 
       Pinsertion_response ptr_response = full_insert(addr, ptr_dcache, index);
       cache_stat_data.replacements += ptr_response->replacement;
-      cache_stat_data.demand_fetches++;
+      cache_stat_data.demand_fetches += WORD_SIZE;
       free(ptr_response);
     } else if (access_type == 1) {
       // escritura a memoria
@@ -185,7 +185,7 @@ void perform_access(addr, access_type)
         // traer a cache y escribir de acuerdo con política de hit write
         Pinsertion_response ptr_response = full_insert(addr, ptr_dcache, index);
         cache_stat_data.replacements += ptr_response->replacement;
-        cache_stat_data.demand_fetches++;
+        cache_stat_data.demand_fetches += WORD_SIZE;
        
         if (cache_writeback) {
           // incrementamos en uno la estadística de copies back
@@ -198,7 +198,7 @@ void perform_access(addr, access_type)
     } else if (access_type == 2) {
         Pinsertion_response ptr_response = full_insert(addr, ptr_icache, index);
         cache_stat_inst.replacements += ptr_response->replacement;
-        cache_stat_inst.demand_fetches++;
+        cache_stat_inst.demand_fetches += WORD_SIZE;
         free(ptr_response);
     }
   }
