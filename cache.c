@@ -585,7 +585,7 @@ Pcache_line get_referenced_line(Pcache ptr_cache, unsigned addr, int set_index) 
     element = element->LRU_next;
   }
   if (element == NULL) {
-    print("Error: se buscó una línea inexistente en set de cache.");
+    printf("Error: se buscó una línea inexistente en set de cache.");
   }
   return element;
 }
@@ -594,5 +594,5 @@ Pcache_line get_referenced_line(Pcache ptr_cache, unsigned addr, int set_index) 
 void reinsert_at_head(Pcache ptr_cache, unsigned addr, int set_index) {
   Pcache_line line_used = get_referenced_line(ptr_cache, addr, set_index);
   delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, line_used);
-  insert(ptr_cache->LRU_head, line_used);
+  insert(ptr_cache->LRU_head, ptr_cache->LRU_tail, line_used);
 }
