@@ -178,6 +178,7 @@ void perform_access(addr, access_type)
       Pinsertion_response ptr_response = full_insert(addr, ptr_dcache, index);
       cache_stat_data.replacements += ptr_response->replacement;
       cache_stat_data.demand_fetches += words_per_block;
+      cache_stat_data.copies_back += ptr_response->dirty_bit * words_per_block;
       free(ptr_response);
     } else if (access_type == 1) {
       // escritura a memoria
