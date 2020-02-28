@@ -191,7 +191,7 @@ void perform_access(addr, access_type)
           // incrementamos en uno la estadística de copies back
           // si la línea removida había sido modificada y tenemos
           // plítica de write back
-          cache_stat_data.copies_back += ptr_response->dirty_bit;
+          cache_stat_data.copies_back += ptr_response->dirty_bit * WORD_SIZE;
         }
         free(ptr_response);
       } 
@@ -220,7 +220,7 @@ void perform_access(addr, access_type)
         // entonces se tiene writethrough por lo que se puede ignorar
         // dirty bit
         reinsert_at_head(ptr_dcache, addr, index);
-        cache_stat_data.copies_back += 1;
+        cache_stat_data.copies_back += WORD_SIZE;
       }
     } else if (access_type == 2) {
       // busque una instrucción en cache y estaba
@@ -244,7 +244,7 @@ void flush()
     for (int j = 0; j < icache.set_contents[i]; j++) {
       printf("  flushing line no. %d...\n", j + 1);
       ptr_actual_element = ptr_next_element;
-      cache_stat_inst.copies_back += ptr_actual_element->dirty;
+      cache_stat_inst.copies_back += ptr_actual_element->dirty * WORD_SIZE;
       ptr_next_element = ptr_actual_element->LRU_next;
       free(ptr_actual_element);
     }
@@ -257,7 +257,7 @@ void flush()
       Pcache_line ptr_actual_element;
       for (int j = 0; j < dcache.set_contents[i]; j++) {
         ptr_actual_element = ptr_next_element;
-        cache_stat_data.copies_back += ptr_actual_element->dirty;
+        cache_stat_data.copies_back += ptr_actual_element->dirty * WORD_SIZE;
         ptr_next_element = ptr_actual_element->LRU_next;
         free(ptr_actual_element);
       }
