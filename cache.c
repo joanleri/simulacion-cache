@@ -90,6 +90,7 @@ void set_cache_param(param, value)
 // (definidas en el archivo cache.h)
 void init_cache()
 {
+  printf("Initializing cache...\n");
   // initialize cache stats
   init_cache_stats(&cache_stat_inst);
   init_cache_stats(&cache_stat_data);
@@ -131,8 +132,6 @@ void init_cache()
     ptr_icache = &icache;
     ptr_dcache = &icache;
   }
-
-  print_cache_status();
 }
 /************************************************************/
 
@@ -149,7 +148,7 @@ void perform_access(addr, access_type)
   * 1 - Data store reference - escritura
   * 2 - Instruction load reference
   */
-
+  printf("Performing access type %d - ", access_type);
   // conteo del número de veces que se accede a memoria por el
   // procesador
   countAccesses(access_type);
@@ -157,10 +156,13 @@ void perform_access(addr, access_type)
   // obtenemos en qué línea/banco le corresponde a la
   // dirección de memoria 
   int index = getLineIndex(addr, access_type);
+  printf("Using line index %d - ", index);
 
   // se verifica si el cache correspondiente contiene
   // una línea con ese tag o no
   int is_hit = isHit(addr, access_type, index);
+
+  printf("%s...\n", (is_hit ? "HIT" : "MISS"));
 
   // conteo de número de misses
   if (access_type < 2) {
@@ -234,10 +236,13 @@ void perform_access(addr, access_type)
 // la memoria cache.
 void flush()
 {
+  printf("Flushing cache...\n");
   for (int i = 0; i < icache.n_sets; i++) {
+    printf("Flushig cache set no. %d...\n", i + 1);
     Pcache_line ptr_next_element = icache.LRU_head[i];
     Pcache_line ptr_actual_element;
-    for (int j = 0; j < icache.set_contents[i]; i++) {
+    for (int j = 0; j < icache.set_contents[i]; j++) {
+      printf("  flushing line no. %d...\n", j + 1);
       ptr_actual_element = ptr_next_element;
       cache_stat_inst.copies_back += ptr_actual_element->dirty;
       ptr_next_element = ptr_actual_element->LRU_next;
@@ -472,12 +477,12 @@ void print_cache_status() {
   print_binary_representation(icache.index_mask);
   printf("\n");
   printf("  mask offset:  %d\n", icache.index_mask_offset);
-  // printf("  LRU_head:  ");
-  // print_array_lines(icache.LRU_head, icache.n_sets);
-  // printf("  LRU_tail:  ");
-  // print_array_lines(icache.LRU_tail, icache.n_sets);
-  // printf("  set_contents:  ");
-  // print_array_ints(icache.set_contents, icache.n_sets);
+  printf("  LRU_head:  ");
+  print_array_lines(icache.LRU_head, icache.n_sets);
+  printf("  LRU_tail:  ");
+  print_array_lines(icache.LRU_tail, icache.n_sets);
+  printf("  set_contents:  ");
+  print_array_ints(icache.set_contents, icache.n_sets);
   if (cache_split) {
     printf(" DATA CACHE\n");
     printf("  size:  %d\n", dcache.size);
@@ -487,12 +492,12 @@ void print_cache_status() {
     print_binary_representation(dcache.index_mask);
     printf("\n");
     printf("  mask offset:  %d\n", dcache.index_mask_offset);
-    // printf("  LRU_head:  ");
-    // print_array_lines(dcache.LRU_head, dcache.n_sets);
-    // printf("  LRU_tail:  ");
-    // print_array_lines(dcache.LRU_tail, dcache.n_sets);
-    // printf("  set_contents:  ");
-    // print_array_ints(dcache.set_contents, dcache.n_sets);
+    printf("  LRU_head:  ");
+    print_array_lines(dcache.LRU_head, dcache.n_sets);
+    printf("  LRU_tail:  ");
+    print_array_lines(dcache.LRU_tail, dcache.n_sets);
+    printf("  set_contents:  ");
+    print_array_ints(dcache.set_contents, dcache.n_sets);
   }
   printf("\n*** END OF CACHE STATUS ***\n\n");
 }
@@ -570,20 +575,20 @@ Pinsertion_response full_insert(unsigned addr, Pcache ptr_cache, int line_number
   
   // enter if there is no more room for the new line
   // a line needs to be removed
-  if (ptr_cache->set_contents[line_number] > ptr_cache->associativity) {
-    Pcache_line ptr_line_delete = *(ptr_cache->LRU_tail);
+  if (ptr_cache->set_contents[line_number] >= ptr_cache->associativity) {
+    Pcache_line ptr_line_delete = ptr_cache->LRU_tail[line_number];
     // we indicate that a replacement has occured as a product of the insertion
     ptr_response->replacement = TRUE;
     // we set the response's dirty bit to that of the evicted line (LRU)
     ptr_response->dirty_bit = ptr_line_delete->dirty;
     // we delete the line
-    delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, ptr_line_delete); 
+    delete(&ptr_cache->LRU_head[line_number], &ptr_cache->LRU_tail[line_number], ptr_line_delete); 
   } else {
     ptr_cache->set_contents[line_number] += 1;
   }
 
   // insert the line asked
-  insert(ptr_cache->LRU_head, ptr_cache->LRU_tail, ptr_new_line);
+  insert(&ptr_cache->LRU_head[line_number], &ptr_cache->LRU_tail[line_number], ptr_new_line);
   return ptr_response;
 }
 
@@ -604,6 +609,7 @@ Pcache_line get_referenced_line(Pcache ptr_cache, unsigned addr, int set_index) 
   }
   if (element == NULL) {
     printf("Error: se buscó una línea inexistente en set de cache.");
+    abort();
   }
   return element;
 }
@@ -611,8 +617,8 @@ Pcache_line get_referenced_line(Pcache ptr_cache, unsigned addr, int set_index) 
 /* remove cache line and reinsert it at LRU head */
 void reinsert_at_head(Pcache ptr_cache, unsigned addr, int set_index) {
   Pcache_line line_used = get_referenced_line(ptr_cache, addr, set_index);
-  delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, line_used);
-  insert(ptr_cache->LRU_head, ptr_cache->LRU_tail, line_used);
+  delete(&ptr_cache->LRU_head[set_index], &ptr_cache->LRU_tail[set_index], line_used);
+  insert(&ptr_cache->LRU_head[set_index], &ptr_cache->LRU_tail[set_index], line_used);
 }
 
 /* free cache LRU_head, LRU_tail, set_contents */
