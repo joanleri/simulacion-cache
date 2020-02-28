@@ -234,13 +234,31 @@ void perform_access(addr, access_type)
 // la memoria cache.
 void flush()
 {
-  printf("Flush variables' values\n");
-  emptyCacheLine(icache.LRU_head);
-  emptyCacheLine(icache.LRU_tail);
-  emptyCacheLine(dcache.LRU_head);
-  emptyCacheLine(dcache.LRU_tail);
-  emptyInt(icache.set_contents);
-  emptyInt(dcache.set_contents);
+  for (int i = 0; i < icache.n_sets; i++) {
+    Pcache_line ptr_next_element = icache.LRU_head[i];
+    Pcache_line ptr_actual_element;
+    for (int j = 0; j < icache.set_contents[i]; i++) {
+      ptr_actual_element = ptr_next_element;
+      cache_stat_inst.copies_back += ptr_actual_element->dirty;
+      ptr_next_element = ptr_actual_element->LRU_next;
+      free(ptr_actual_element);
+    }
+  }
+  free_cache_resources(ptr_icache);
+
+  if (cache_split) {
+    for (int i = 0; i < dcache.n_sets; i++) {
+      Pcache_line ptr_next_element = dcache.LRU_head[i];
+      Pcache_line ptr_actual_element;
+      for (int j = 0; j < dcache.set_contents[i]; j++) {
+        ptr_actual_element = ptr_next_element;
+        cache_stat_data.copies_back += ptr_actual_element->dirty;
+        ptr_next_element = ptr_actual_element->LRU_next;
+        free(ptr_actual_element);
+      }
+    }
+    free_cache_resources(ptr_dcache);
+  }
 }
 /************************************************************/
 
@@ -595,4 +613,11 @@ void reinsert_at_head(Pcache ptr_cache, unsigned addr, int set_index) {
   Pcache_line line_used = get_referenced_line(ptr_cache, addr, set_index);
   delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, line_used);
   insert(ptr_cache->LRU_head, ptr_cache->LRU_tail, line_used);
+}
+
+/* free cache LRU_head, LRU_tail, set_contents */
+void free_cache_resources(Pcache ptr_cache) {
+  free(ptr_cache->LRU_head);
+  free(ptr_cache->LRU_tail);
+  free(ptr_cache->set_contents);
 }

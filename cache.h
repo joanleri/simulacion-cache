@@ -113,6 +113,7 @@ Pinsertion_response full_insert();
 Pinsertion_response get_new_insertion_response();
 Pcache_line get_referenced_line();
 void reinsert_at_head();
+void free_cache_resources();
 
 /* macros */
 #define LOG2(x) ((int) rint((log((double) (x))) / (log(2.0))))
