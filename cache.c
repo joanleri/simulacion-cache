@@ -548,7 +548,6 @@ Pinsertion_response full_insert(unsigned addr, Pcache ptr_cache, int line_number
   // enter if there is no more room for the new line
   // a line needs to be removed
   if (ptr_cache->set_contents[line_number] > ptr_cache->associativity) {
-
     Pcache_line ptr_line_delete = *(ptr_cache->LRU_tail);
     // we indicate that a replacement has occured as a product of the insertion
     ptr_response->replacement = TRUE;
@@ -556,6 +555,8 @@ Pinsertion_response full_insert(unsigned addr, Pcache ptr_cache, int line_number
     ptr_response->dirty_bit = ptr_line_delete->dirty;
     // we delete the line
     delete(ptr_cache->LRU_head, ptr_cache->LRU_tail, ptr_line_delete); 
+  } else {
+    ptr_cache->set_contents[line_number] += 1;
   }
 
   // insert the line asked
