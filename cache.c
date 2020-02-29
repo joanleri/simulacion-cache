@@ -538,7 +538,7 @@ int getLineIndex(addr, access_type)
 unsigned getTag(addr, nLines)
   unsigned addr, nLines;
 {
-  int offset = LOG2(nLines) + LOG2(words_per_block);
+  int offset = LOG2(nLines) + LOG2(words_per_block * WORD_SIZE);
   // printf("Tag: ");
   // print_binary_representation(addr >> offset);
   // printf("...\n");

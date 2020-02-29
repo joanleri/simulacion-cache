@@ -59,3 +59,5 @@ test
 
 sim
 sim.*
+output.txt
+simultaneo.sh
