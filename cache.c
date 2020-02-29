@@ -197,7 +197,7 @@ void perform_access(addr, access_type)
           ptr_inserted_line->dirty = TRUE;
           cache_stat_data.copies_back += ptr_response->dirty_bit * words_per_block;
         } else {
-            cache_stat_data.copies_back += words_per_block;
+            cache_stat_data.copies_back += 1;
         }
         free(ptr_response);
       } else {
@@ -228,7 +228,7 @@ void perform_access(addr, access_type)
         // entonces se tiene writethrough por lo que se puede ignorar
         // dirty bit
         reinsert_at_head(ptr_dcache, addr, index);
-        cache_stat_data.copies_back += words_per_block;
+        cache_stat_data.copies_back += 1;
       }
     } else if (access_type == 2) {
       // busque una instrucción en cache y estaba
