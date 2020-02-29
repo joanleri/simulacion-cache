@@ -539,6 +539,9 @@ unsigned getTag(addr, nLines)
   unsigned addr, nLines;
 {
   int offset = LOG2(nLines) + LOG2(words_per_block);
+  // printf("Tag: ");
+  // print_binary_representation(addr >> offset);
+  // printf("...\n");
   return addr >> offset;
 }
 
