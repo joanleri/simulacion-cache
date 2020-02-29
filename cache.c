@@ -201,7 +201,7 @@ void perform_access(addr, access_type)
         }
         free(ptr_response);
       } else {
-        cache_stat_data.copies_back += words_per_block;
+        cache_stat_data.copies_back += 1;
       }
     } else if (access_type == 2) {
         Pinsertion_response ptr_response = full_insert(addr, ptr_icache, index);
