@@ -207,6 +207,11 @@ void perform_access(addr, access_type)
         Pinsertion_response ptr_response = full_insert(addr, ptr_icache, index);
         cache_stat_inst.replacements += ptr_response->replacement;
         cache_stat_inst.demand_fetches += words_per_block;
+        if (!cache_split) {
+          // Cargar una instrucción puede borrar un dato 
+          // por lo que hay que revisar también el dirty bit
+          cache_stat_data.copies_back += ptr_response->dirty_bit * words_per_block;
+        }
         free(ptr_response);
     }
   }
