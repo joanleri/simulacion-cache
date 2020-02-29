@@ -3,7 +3,6 @@
  * cache.h
  */
 
-
 #define TRUE 1
 #define FALSE 0
 
@@ -28,14 +27,14 @@
 #define CACHE_PARAM_WRITEALLOC 7
 #define CACHE_PARAM_NOWRITEALLOC 8
 
-
 /* structure definitions */
 // definición de la estructura de una línea de cache
 // además de una etiqueta y un dirty bit contiene
-// dos apuntadores a líneas de cache ya que se 
+// dos apuntadores a líneas de cache ya que se
 // implementa como una lista doblemente ligada
 // útil cuando se use para cache con asociatividad
-typedef struct cache_line_ {
+typedef struct cache_line_
+{
   unsigned tag;
   int dirty;
 
@@ -51,43 +50,45 @@ typedef struct cache_line_ {
 // El apuntador *LRU_head sirve de referencia al arreglo
 // de cabezas de cada lista (banco) de líneas de cache.
 // El apuntador *LRU_tail sirve de referencia al arreglo
-// de finalización de cada lista (banco) del cache. Es 
+// de finalización de cada lista (banco) del cache. Es
 // solamente necesario para implementar LRU de forma rápida.
 // contents sirve para llevar un conteo de la cardinalidad
 // de cada banco para asegurarse que ninguno exceda la
 // asociatividad expecificada. Es un arreglo de enteros
-typedef struct cache_ {
-  int size;			/* cache size */
-  int associativity;		/* cache associativity */
-  int n_sets;			/* number of cache sets */
-  unsigned index_mask;		/* mask to find cache index */
-  int index_mask_offset;	/* number of zero bits in mask */
-  Pcache_line *LRU_head;	/* head of LRU list for each set */
-  Pcache_line *LRU_tail;	/* tail of LRU list for each set */
-  int *set_contents;		/* number of valid entries in set */
+typedef struct cache_
+{
+  int size;              /* cache size */
+  int associativity;     /* cache associativity */
+  int n_sets;            /* number of cache sets */
+  unsigned index_mask;   /* mask to find cache index */
+  int index_mask_offset; /* number of zero bits in mask */
+  Pcache_line *LRU_head; /* head of LRU list for each set */
+  Pcache_line *LRU_tail; /* tail of LRU list for each set */
+  int *set_contents;     /* number of valid entries in set */
   // int contents;			/* number of valid entries in cache (no le veo la utilidad) */
 } cache, *Pcache;
 
-typedef struct cache_stat_ {
-  int accesses;			/* number of memory references */
-  int misses;			/* number of cache misses */
-  int replacements;		/* number of misses that cause replacments */
-  int demand_fetches;		/* number of fetches */
-  int copies_back;		/* number of write backs */
+typedef struct cache_stat_
+{
+  int accesses;       /* number of memory references */
+  int misses;         /* number of cache misses */
+  int replacements;   /* number of misses that cause replacments */
+  int demand_fetches; /* number of fetches */
+  int copies_back;    /* number of write backs */
 } cache_stat, *Pcache_stat;
 
-typedef struct insertion_response_ {
-  int replacement;  /* True if last insertion produce a replacement */
-  int dirty_bit;    /* Value of dirty bit of line replaced */
+typedef struct insertion_response_
+{
+  int replacement; /* True if last insertion produce a replacement */
+  int dirty_bit;   /* Value of dirty bit of line replaced */
 } insertion_response, *Pinsertion_response;
-
 
 /* function prototypes */
 void set_cache_param();
 void init_cache();
 void perform_access();
 void flush();
-void delete();
+void delete ();
 void insert();
 void dump_settings();
 void print_stats();
@@ -114,6 +115,7 @@ Pinsertion_response get_new_insertion_response();
 Pcache_line get_referenced_line();
 void reinsert_at_head();
 void free_cache_resources();
+void free_structure();
 
 /* macros */
-#define LOG2(x) ((int) rint((log((double) (x))) / (log(2.0))))
+#define LOG2(x) ((int)rint((log((double)(x))) / (log(2.0))))

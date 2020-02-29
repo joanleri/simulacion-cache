@@ -197,11 +197,11 @@ void perform_access(addr, access_type)
           ptr_inserted_line->dirty = TRUE;
           cache_stat_data.copies_back += ptr_response->dirty_bit * words_per_block;
         } else {
-            cache_stat_data.copies_back += 1;
+          cache_stat_data.copies_back += 1; // += words_per_block;?
         }
         free(ptr_response);
       } else {
-        cache_stat_data.copies_back += 1;
+        cache_stat_data.copies_back += 1; // += words_per_block;?
       }
     } else if (access_type == 2) {
         Pinsertion_response ptr_response = full_insert(addr, ptr_icache, index);
@@ -210,7 +210,7 @@ void perform_access(addr, access_type)
         if (!cache_split) {
           // Cargar una instrucción puede borrar un dato 
           // por lo que hay que revisar también el dirty bit
-          cache_stat_data.copies_back += ptr_response->dirty_bit * words_per_block;
+          cache_stat_data.copies_back += ptr_response->dirty_bit * words_per_block /* * cache_writeback? */;
         }
         free(ptr_response);
     }
@@ -250,31 +250,11 @@ void perform_access(addr, access_type)
 void flush()
 {
   printf("Flushing cache...\n");
-  for (int i = 0; i < icache.n_sets; i++) {
-    // printf("Flushig cache set no. %d...\n", i + 1);
-    Pcache_line ptr_next_element = icache.LRU_head[i];
-    Pcache_line ptr_actual_element;
-    for (int j = 0; j < icache.set_contents[i]; j++) {
-      // printf("  flushing line no. %d...\n", j + 1);
-      ptr_actual_element = ptr_next_element;
-      cache_stat_inst.copies_back += ptr_actual_element->dirty * words_per_block;
-      ptr_next_element = ptr_actual_element->LRU_next;
-      free(ptr_actual_element);
-    }
-  }
+  free_structure(ptr_icache);
   free_cache_resources(ptr_icache);
 
   if (cache_split) {
-    for (int i = 0; i < dcache.n_sets; i++) {
-      Pcache_line ptr_next_element = dcache.LRU_head[i];
-      Pcache_line ptr_actual_element;
-      for (int j = 0; j < dcache.set_contents[i]; j++) {
-        ptr_actual_element = ptr_next_element;
-        cache_stat_data.copies_back += ptr_actual_element->dirty * words_per_block;
-        ptr_next_element = ptr_actual_element->LRU_next;
-        free(ptr_actual_element);
-      }
-    }
+    free_structure(ptr_dcache);
     free_cache_resources(ptr_dcache);
   }
 }
@@ -624,7 +604,7 @@ Pcache_line get_referenced_line(Pcache ptr_cache, unsigned addr, int set_index) 
     element = element->LRU_next;
   }
   if (element == NULL) {
-    printf("Error: se buscó una línea inexistente en set de cache.");
+    printf("=== Error: Line NOT found in cache set ===");
     abort();
   }
   return element;
@@ -642,4 +622,19 @@ void free_cache_resources(Pcache ptr_cache) {
   free(ptr_cache->LRU_head);
   free(ptr_cache->LRU_tail);
   free(ptr_cache->set_contents);
+}
+
+void free_structure(cache *data) {
+  for (int i = 0; i < data->n_sets; i++) {
+    // printf("Flushig cache set no. %d...\n", i + 1);
+    Pcache_line ptr_next_element = data->LRU_head[i];
+    Pcache_line ptr_actual_element;
+    for (int j = 0; j < data->set_contents[i]; j++) {
+      // printf("  flushing line no. %d...\n", j + 1);
+      ptr_actual_element = ptr_next_element;
+      cache_stat_inst.copies_back += ptr_actual_element->dirty * words_per_block;
+      ptr_next_element = ptr_actual_element->LRU_next;
+      free(ptr_actual_element);
+    }
+  }
 }
