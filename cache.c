@@ -25,6 +25,7 @@ static int cache_assoc = DEFAULT_CACHE_ASSOC;
 static int cache_writeback = DEFAULT_CACHE_WRITEBACK;
 static int cache_writealloc = DEFAULT_CACHE_WRITEALLOC;
 static int address_size = DEFAULT_ADDRESS_SIZE;
+static int debug = DEFAULT_DEBUG;
 
 /* cache model data structures */
 static Pcache ptr_icache; // apuntador a cache de instrucciones
@@ -75,6 +76,9 @@ void set_cache_param(param, value)
     break;
   case CACHE_PARAM_NOWRITEALLOC:
     cache_writealloc = FALSE;
+    break;
+  case CACHE_PARAM_DEBUG:
+    debug = TRUE;
     break;
   default:
     printf("error set_cache_param: bad parameter value\n");
@@ -249,7 +253,9 @@ void perform_access(addr, access_type)
 // la memoria cache.
 void flush()
 {
-  printf("Flushing cache...\n");
+  if (debug) {
+    printf("Flushing cache...\n");
+  }
   free_structure(ptr_icache);
   free_cache_resources(ptr_icache);
 
@@ -371,6 +377,7 @@ void print_stats()
 	 cache_stat_data.demand_fetches);
   printf("  copies back:   %d\n", cache_stat_inst.copies_back +
 	 cache_stat_data.copies_back);
+   printf("\n");
 }
 /************************************************************/
 
@@ -414,13 +421,17 @@ void init_cache_stats(Pcache_stat c_stats) {
 /* Responsible of empty memory from a Pcache_line */
 void emptyCacheLine(Pcache_line *line) {
   free(line);
-  printf("Free memory from Cache Line\n");
+  if (debug) {
+    printf("Free memory from Cache Line\n");
+  }
 }
 
 /* Responsible of empty memory from a int */
 void emptyInt(int *number) {
   free(number);
-  printf("Free memory from Integer\n");  
+  if (debug) {
+    printf("Free memory from Integer\n");  
+  }
 }
 
 /* helper function to print binary representation of a number */

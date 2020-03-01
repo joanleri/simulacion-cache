@@ -68,6 +68,7 @@ char **argv;
       printf("\t-wt: \t\tset write policy to write through\n");
       printf("\t-wa: \t\tset allocation policy to write allocate\n");
       printf("\t-nw: \t\tset allocation policy to no write allocate\n");
+      printf("\t--debug: \t\tset info prints for debugging\n");
       exit(0);
     }
 
@@ -146,6 +147,13 @@ char **argv;
       continue;
     }
 
+    if (!strcmp(argv[arg_index], "--debug"))
+    {
+      set_cache_param(CACHE_PARAM_DEBUG, value);
+      arg_index += 1;
+      continue;
+    }
+
     printf("error:  unrecognized flag %s\n", argv[arg_index]);
     exit(-1);
   }
@@ -170,9 +178,9 @@ void play_trace(inFile)
     FILE *inFile;
 {
   unsigned addr, data, access_type;
-  int num_inst;
+  // int num_inst;
 
-  num_inst = 0;
+  // num_inst = 0;
 
   // la función read_trace_element regresa 0 cuando se alcanza
   // el final (EOF) del archivo leído. Por eso se puede utilizar
@@ -195,9 +203,9 @@ void play_trace(inFile)
       printf("skipping access, unknown type(%d)\n", access_type);
     }
 
-    num_inst++;
-    if (!(num_inst % PRINT_INTERVAL))
-      printf("processed %d references\n", num_inst);
+    // num_inst++;
+    // if (!(num_inst % PRINT_INTERVAL))
+    //   printf("processed %d references\n", num_inst);
   }
 
   flush();

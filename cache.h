@@ -15,6 +15,7 @@
 #define DEFAULT_CACHE_WRITEBACK TRUE
 #define DEFAULT_CACHE_WRITEALLOC TRUE
 #define DEFAULT_ADDRESS_SIZE 32
+#define DEFAULT_DEBUG FALSE
 
 /* constants for settting cache parameters */
 #define CACHE_PARAM_BLOCK_SIZE 0
@@ -26,6 +27,7 @@
 #define CACHE_PARAM_WRITETHROUGH 6
 #define CACHE_PARAM_WRITEALLOC 7
 #define CACHE_PARAM_NOWRITEALLOC 8
+#define CACHE_PARAM_DEBUG 9
 
 /* structure definitions */
 // definición de la estructura de una línea de cache
