@@ -10,6 +10,7 @@
 #include "main.h"
 
 static FILE *traceFile;
+static int debug = FALSE;
 
 int main(argc, argv) int argc;
 char **argv;
@@ -150,6 +151,7 @@ char **argv;
     if (!strcmp(argv[arg_index], "--debug"))
     {
       set_cache_param(CACHE_PARAM_DEBUG, value);
+      debug = TRUE;
       arg_index += 1;
       continue;
     }
@@ -178,9 +180,7 @@ void play_trace(inFile)
     FILE *inFile;
 {
   unsigned addr, data, access_type;
-  // int num_inst;
-
-  // num_inst = 0;
+  int num_inst = 0;
 
   // la función read_trace_element regresa 0 cuando se alcanza
   // el final (EOF) del archivo leído. Por eso se puede utilizar
@@ -203,9 +203,9 @@ void play_trace(inFile)
       printf("skipping access, unknown type(%d)\n", access_type);
     }
 
-    // num_inst++;
-    // if (!(num_inst % PRINT_INTERVAL))
-    //   printf("processed %d references\n", num_inst);
+    num_inst++;
+    if (!(num_inst % PRINT_INTERVAL) && debug)
+      printf("processed %d references\n", num_inst);
   }
 
   flush();

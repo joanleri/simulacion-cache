@@ -60,4 +60,5 @@ test
 sim
 sim.*
 output*.txt
+output*.csv
 simultaneo.sh
