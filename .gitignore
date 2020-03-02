@@ -62,3 +62,5 @@ sim.*
 output*.txt
 output*.csv
 simultaneo.sh
+working_set.sh
+bandwidth.sh
