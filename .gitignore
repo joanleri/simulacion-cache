@@ -64,3 +64,5 @@ output*.csv
 simultaneo.sh
 working_set.sh
 bandwidth.sh
+associativity.sh
+blocksize.sh
