@@ -17,16 +17,17 @@ Visualizar el funcionamiento del componente **caché** con sus diferentes varian
 Verificar el SO que se usa.
 
 # Argumentos
-- h: imprime el mensaje de ayuda (documentación)
-- bs: establece el tamaño de bloque de la memoria cache
-- us: establece el tamaño de la memoria cache unificada
-- is: establece el tamaño de la memoria cache de instrucciones
-- ds: establece el tamaño de la memoria cache de datos
-- a: establece el tipo de asociatividad de la memoria cache
-- wb: establece la política de escritura del cache a write-back
-- wt: establece la política de escritura del cache a write-through
-- wa: establece la política de alocación de memoria a write-allocate
-- nw: establece la política de alocación de memoria a no-write-allocate 
+- h:        imprime el mensaje de ayuda (documentación)
+- bs:       establece el tamaño de bloque de la memoria cache
+- us:       establece el tamaño de la memoria cache unificada
+- is:       establece el tamaño de la memoria cache de instrucciones
+- ds:       establece el tamaño de la memoria cache de datos
+- a:        establece el tipo de asociatividad de la memoria cache
+- wb:       establece la política de escritura del cache a write-back
+- wt:       establece la política de escritura del cache a write-through
+- wa:       establece la política de alocación de memoria a write-allocate
+- nw:       establece la política de alocación de memoria a no-write-allocate
+--debug:    imprime estadísticas con información a detalle
 
 ### Referencias
 - [How to use malloc?](https://www.programiz.com/c-programming/c-dynamic-memory-allocation)
